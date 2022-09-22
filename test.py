@@ -16,8 +16,11 @@ data = pd.read_csv('gamingData5.csv', delimiter=';')
 #         data['Q8'][i] = 0
 
 # process data on Q8 to two classes
-print(data.loc[data['Q8'] >= 2, 'Q8'])
-data.loc[data['Q8'] < 2, 'Q8']
+data.loc[data['Q8'] >= 2, 'Q8'] = 1
+data.loc[data['Q8'] < 2, 'Q8'] = 0
+
+
+
 
 
 
