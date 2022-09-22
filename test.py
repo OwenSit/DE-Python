@@ -16,11 +16,14 @@ data = pd.read_csv('gamingData5.csv', delimiter=';')
 #         data['Q8'][i] = 0
 
 # process data on Q8 to two classes
-data.loc[data['Q8'] >= 2, 'Q8'] = 1
+data.dropna(how='any', axis=0, inplace=True)
 data.loc[data['Q8'] < 2, 'Q8'] = 0
+data.loc[data['Q8'] >= 2, 'Q8'] = 1
 
 X = data[['Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7']]
 y = data['Q8']
+
+print(X)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
 log_regression = LogisticRegression()
