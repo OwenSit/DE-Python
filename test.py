@@ -10,7 +10,7 @@ from scipy.optimize import differential_evolution
 
 
 data = pd.read_csv('gamingData5.csv', delimiter=';')
-
+X_size = 7
 # WHEN ALL WEIGHT IS SET TO 1
 # process data on Q8 to two classes
 data.dropna(how='any', axis=0, inplace=True)
@@ -39,32 +39,51 @@ y = data['Q8']
 # plt.legend(loc=4)
 # plt.show()
 
-X = X.copy()
-X_sum = X_sum.copy()
 
 
 # #define the objective function:
-def obj_fun(parameters):
+def obj_fun(x):
     # update the dataframe
-    for i in range(7):
-        X.iloc[:,i] *= parameters[i]
+    X_copy = X.copy()
+    X_sum_copy = X_sum.copy()
+    for i in range(X_size):
+        X_copy.iloc[:,i] *= x[i]
     # find the new sum
-    X_sum = X.iloc[:, 0]
-    for i in range(1, X.shape[1]):
-        X_sum += X.iloc[:, i]
+    X_sum_copy = X_copy.iloc[:, 0]
+    for i in range(1, X_copy.shape[1]):
+        X_sum_copy += X_copy.iloc[:, i]
     # Using logistic regression to re-scale data within [0,1]
     # X_train, X_test, y_train, y_test = train_test_split(X_sum, y, test_size=0.3, random_state=0)
     # log_regression = LogisticRegression()
     # log_regression.fit(X_train.values.reshape(-1,1), y_train)
     # y_pred_proba = log_regression.predict_proba(X_test.values.reshape(-1,1))[::,1]
-    auc = metrics.roc_auc_score(y, X_sum)
+    auc = metrics.roc_auc_score(y, X_sum_copy)
 
     return -1 * auc
 
 
 bounds = [(0.01, 3), (0.01, 3), (0.01, 3), (0.01, 3), (0.01, 3), (0.01, 3),
           (0.01, 3)]
-result = differential_evolution(obj_fun, bounds)
+result = differential_evolution(obj_fun, bounds, seed=1, maxiter=10, disp=True)
+print(result.x)
+X_copy = X.copy()
+X_sum_copy = X_sum.copy()
+for i in range(X_size):
+    X_copy.iloc[:,i] *= result.x[i]
+X_sum_copy = X_copy.iloc[:, 0]
+for i in range(1, X_copy.shape[1]):
+    X_sum_copy += X_copy.iloc[:, i]
+
+fpr, tpr, _ = metrics.roc_curve(y, X_sum_copy)
+auc = metrics.roc_auc_score(y, X_sum_copy)
+print(f"auc score is: {auc}")
+
+plt.plot(fpr, tpr, label="AUC="+str(auc))
+plt.ylabel("TPR")
+plt.xlabel("FPR")
+plt.legend(loc=4)
+plt.show()
+
 
 
 # url = "https://raw.githubusercontent.com/Statology/Python-Guides/main/default.csv"
