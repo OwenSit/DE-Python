@@ -40,7 +40,7 @@ def obj_fun(parameters, *data):
 
 
 #in the data, women='0', man='1',children='0', students='1', parents='2'
-input = np.genfromtxt('gamingData5.csv', skip_header=1, delimiter=';')
+input = np.genfromtxt('man_data_cleaned.csv', skip_header=1, delimiter=',')
 data = input[:, :8]
 #modify data in the output (8th) column
 for row in range(len(data)):
