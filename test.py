@@ -1,114 +1,28 @@
-# this file is for testing only
-from random import random
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn import metrics
 import matplotlib.pyplot as plt
-from scipy.optimize import differential_evolution
 
+#import dataset from CSV file on Github
+url = "https://raw.githubusercontent.com/Statology/Python-Guides/main/default.csv"
+data = pd.read_csv(url)
 
-data = pd.read_csv('gamingData5.csv', delimiter=';')
-X_size = 7
-# WHEN ALL WEIGHT IS SET TO 1
-# process data on Q8 to two classes
-data.dropna(how='any', axis=0, inplace=True)
-data.loc[data['Q8'] < 1, 'Q8'] = 0
-data.loc[data['Q8'] >= 1, 'Q8'] = 1
+#define the predictor variables and the response variable
+X = data[['student', 'balance', 'income']]
+y = data['default']
 
-X = data[['Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7']]
-X_sum = X.iloc[:, 0]
-for i in range(1, X.shape[1]):
-    X_sum += X.iloc[:, i]
-# print(X_sum)
-y = data['Q8']
+#split the dataset into training (70%) and testing (30%) sets
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.3,random_state=0) 
 
-# X_train, X_test, y_train, y_test = train_test_split(X_sum, y, test_size=0.3, random_state=0)
-# log_regression = LogisticRegression()
-# log_regression.fit(X_train.values.reshape(-1,1), y_train)
-# y_pred_proba = log_regression.predict_proba(X_test.values.reshape(-1,1))[::,1]
+#instantiate the model
+log_regression = LogisticRegression()
 
-# fpr, tpr, _ = metrics.roc_curve(y, X_sum)
-# auc = metrics.roc_auc_score(y, X_sum)
-# print(f"auc score is: {auc}")
+#fit the model using the training data
+log_regression.fit(X_train,y_train)
 
-# plt.plot(fpr, tpr, label="AUC="+str(auc))
-# plt.ylabel("TPR")
-# plt.xlabel("FPR")
-# plt.legend(loc=4)
-# plt.show()
+#define metrics
+y_pred_proba = log_regression.predict_proba(X_test)
 
-
-
-# #define the objective function:
-def obj_fun(x):
-    # update the dataframe
-    X_copy = X.copy()
-    X_sum_copy = X_sum.copy()
-    for i in range(X_size):
-        X_copy.iloc[:,i] *= x[i]
-    # find the new sum
-    X_sum_copy = X_copy.iloc[:, 0]
-    for i in range(1, X_copy.shape[1]):
-        X_sum_copy += X_copy.iloc[:, i]
-    # Using logistic regression to re-scale data within [0,1]
-    # X_train, X_test, y_train, y_test = train_test_split(X_sum, y, test_size=0.3, random_state=0)
-    # log_regression = LogisticRegression()
-    # log_regression.fit(X_train.values.reshape(-1,1), y_train)
-    # y_pred_proba = log_regression.predict_proba(X_test.values.reshape(-1,1))[::,1]
-    auc = metrics.roc_auc_score(y, X_sum_copy)
-
-    return -1 * auc
-
-
-bounds = [(0.01, 3), (0.01, 3), (0.01, 3), (0.01, 3), (0.01, 3), (0.01, 3),
-          (0.01, 3)]
-result = differential_evolution(obj_fun, bounds, seed=1, maxiter=10, disp=True)
-print(result.x)
-X_copy = X.copy()
-X_sum_copy = X_sum.copy()
-for i in range(X_size):
-    X_copy.iloc[:,i] *= result.x[i]
-X_sum_copy = X_copy.iloc[:, 0]
-for i in range(1, X_copy.shape[1]):
-    X_sum_copy += X_copy.iloc[:, i]
-
-fpr, tpr, _ = metrics.roc_curve(y, X_sum_copy)
-auc = metrics.roc_auc_score(y, X_sum_copy)
-print(f"auc score is: {auc}")
-
-plt.plot(fpr, tpr, label="AUC="+str(auc))
-plt.ylabel("TPR")
-plt.xlabel("FPR")
-plt.legend(loc=4)
-plt.show()
-
-
-
-# url = "https://raw.githubusercontent.com/Statology/Python-Guides/main/default.csv"
-# data = pd.read_csv(url)
-
-# X = data[['student']]
-# y = data['default']
-# # print(y.to_numpy())
-
-# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
-
-
-# log_regression = LogisticRegression()
-
-# log_regression.fit(X_train, y_train)
-
-
-# y_pred_proba = log_regression.predict_proba(X_test)[::,1]
-
-
-# fpr, tpr, _ = metrics.roc_curve(y_test, y_pred_proba)
-# auc = metrics.roc_auc_score(y_test, y_pred_proba)
-
-# plt.plot(fpr,tpr,label="AUC="+str(auc))
-# plt.ylabel("TPR")
-# plt.xlabel("FPR")
-# plt.legend(loc=4)
-# plt.show()
+print(y_pred_proba)
