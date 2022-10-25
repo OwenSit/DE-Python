@@ -41,7 +41,7 @@ def obj_fun(parameters, *data):
 input = np.genfromtxt('woman_data_cleaned.csv', skip_header=1, delimiter=',')
 data = input[:, :8]
 Q8_THRESHOLD = 1.5
-Q17_THRESHOLD = 7 * Q8_THRESHOLD
+SUM_Q17_THRESHOLD = 7 * Q8_THRESHOLD
 # modify data in the output (8th) column
 for row in range(len(data)):
     if data[row][7] >= 1.5:
@@ -54,7 +54,17 @@ bounds = [(0.01, 3), (0.01, 3), (0.01, 3), (0.01, 3), (0.01, 3), (0.01, 3),
 
 # when all weights are equal to 1
 data = np.asarray(data)
-pre_result = data[:, :7].sum(axis=0)
+pre_result = data[:, :7].sum(axis=1)
+# print(f'The size of pre_result is {pre_result.shape}\n')
+for i in range(pre_result.shape[0]):
+    if (pre_result[i]) >= SUM_Q17_THRESHOLD:
+        pre_result[i] = 1
+    else:
+        pre_result[i] = 0
+
+fpr, tpr, _ = metrics.roc_curve(data[:, 7], pre_result)
+auc = metrics.roc_auc_score(data[:, 7], pre_result)
+plt.plot(fpr, tpr, label="AUC="+str(auc))
 
 result = differential_evolution(obj_fun, bounds, args=data)
 # print(obj_fun(parameters, data))
@@ -65,14 +75,14 @@ para = np.array(result.x)
 para_transposed = np.transpose(para)
 result_dot = np.dot(data[:, :7], para_transposed)
 for i in range(result_dot.shape[0]):
-    if (result_dot[i]) >= 10.5:
+    if (result_dot[i]) >= SUM_Q17_THRESHOLD:
         result_dot[i] = 1
     else:
         result_dot[i] = 0
 
-fpr, tpr, _ = metrics.roc_curve(data[:, 7],  result_dot)
-auc = metrics.roc_auc_score(data[:, 7], result_dot)
-plt.plot(fpr, tpr, label="AUC="+str(auc))
+de_fpr, de_tpr, _ = metrics.roc_curve(data[:, 7],  result_dot)
+de_auc = metrics.roc_auc_score(data[:, 7], result_dot)
+plt.plot(de_fpr, de_tpr, label="DE_AUC="+str(de_auc))
 plt.ylabel('True Positive Rate')
 plt.xlabel('False Positive Rate')
 plt.legend(loc=4)
