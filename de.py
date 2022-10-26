@@ -43,7 +43,7 @@ def obj_fun(parameters, *data):
     # return -1*diff_squ_sum
 
 
-Q8_THRESHOLD = 2.5
+Q8_THRESHOLD = 3
 SUM_Q17_THRESHOLD = 7 * Q8_THRESHOLD
 FILENAME = "woman_data_cleaned.csv"
 input = np.genfromtxt(FILENAME, skip_header=1, delimiter=',')
